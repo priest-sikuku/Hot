@@ -24,6 +24,7 @@ interface Ad {
   mpesa_number: string | null
   paybill_number: string | null
   airtel_money: string | null
+  payment_methods_selected?: Array<{ id: string; code: string; name: string }> | null
   terms_of_trade: string | null
   created_at: string
   profiles: {
@@ -217,7 +218,26 @@ export default function P2PMarket() {
   function getPaymentMethods(ad: Ad): { name: string; color: string }[] {
     const methods: { name: string; color: string }[] = []
 
-    // Check individual payment method fields
+    if (
+      ad.payment_methods_selected &&
+      Array.isArray(ad.payment_methods_selected) &&
+      ad.payment_methods_selected.length > 0
+    ) {
+      ad.payment_methods_selected.forEach((method: any) => {
+        if (method.code === "mpesa") {
+          methods.push({ name: "M-Pesa", color: "bg-green-500" })
+        } else if (method.code === "mpesa_paybill") {
+          methods.push({ name: "M-Pesa Paybill", color: "bg-yellow-500" })
+        } else if (method.code === "bank_transfer") {
+          methods.push({ name: "Bank Transfer", color: "bg-blue-500" })
+        } else if (method.code === "airtel_money") {
+          methods.push({ name: "Airtel Money", color: "bg-red-500" })
+        }
+      })
+      return methods
+    }
+
+    // Fallback to individual payment method fields for legacy ads
     if (ad.mpesa_number) {
       methods.push({ name: "M-Pesa", color: "bg-green-500" })
     }
@@ -227,30 +247,8 @@ export default function P2PMarket() {
     if (ad.airtel_money) {
       methods.push({ name: "Airtel Money", color: "bg-red-500" })
     }
-
-    // Parse account_number field for buy ads (contains concatenated payment methods)
     if (ad.account_number) {
-      const accountStr = ad.account_number.toLowerCase()
-
-      // Check if it's a concatenated payment methods string (for buy ads)
-      if (accountStr.includes("m-pesa") && !ad.mpesa_number) {
-        if (accountStr.includes("paybill")) {
-          methods.push({ name: "M-Pesa Paybill", color: "bg-yellow-500" })
-        } else {
-          methods.push({ name: "M-Pesa", color: "bg-green-500" })
-        }
-      }
-      if (accountStr.includes("bank") && !methods.some((m) => m.name.includes("Bank"))) {
-        methods.push({ name: "Bank Transfer", color: "bg-blue-500" })
-      }
-      if (accountStr.includes("airtel") && !ad.airtel_money) {
-        methods.push({ name: "Airtel Money", color: "bg-red-500" })
-      }
-
-      // If no payment method keywords found, treat as bank account details
-      if (methods.length === 0 && ad.account_number.length > 0) {
-        methods.push({ name: "Bank Transfer", color: "bg-blue-500" })
-      }
+      methods.push({ name: "Bank Transfer", color: "bg-blue-500" })
     }
 
     return methods

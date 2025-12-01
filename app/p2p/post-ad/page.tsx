@@ -244,6 +244,14 @@ export default function PostAdPage() {
           paybill_number: paybillNumber,
           account_number: bankAccount,
           airtel_money: airtelNumber,
+          payment_methods_selected: selectedPaymentMethods.map((methodId) => {
+            const method = KENYA_PAYMENT_METHODS.find((m) => m.id === methodId)
+            return {
+              id: methodId,
+              code: method?.code,
+              name: method?.name,
+            }
+          }),
           terms_of_trade: formData.termsOfTrade || "",
           status: "active",
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
