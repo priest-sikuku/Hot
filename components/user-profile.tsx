@@ -18,7 +18,7 @@ export function UserProfile() {
     email: "john@example.com",
     phone: "+254 712 345 678",
     location: "Nairobi, Kenya",
-    bio: "Crypto enthusiast and GrowX miner",
+    bio: "Crypto enthusiast and AfriX miner",
   })
 
   useEffect(() => {
