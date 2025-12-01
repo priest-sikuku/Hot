@@ -62,7 +62,7 @@ SELECT
   pa.id,
   pa.user_id,
   pa.ad_type,
-  pa.gx_amount,
+  pa.afx_amount,
   pa.remaining_amount,
   pa.price_per_afx,
   pa.min_amount,

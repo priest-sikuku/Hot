@@ -126,11 +126,11 @@ export async function fetchAdsWithFilters(adType: "buy" | "sell", filters: AdFil
   }
 
   if (filters.priceMin !== undefined) {
-    query = query.gte("gx_amount", filters.priceMin)
+    query = query.gte("afx_amount", filters.priceMin)
   }
 
   if (filters.priceMax !== undefined) {
-    query = query.lte("gx_amount", filters.priceMax)
+    query = query.lte("afx_amount", filters.priceMax)
   }
 
   if (filters.minAmount !== undefined) {
