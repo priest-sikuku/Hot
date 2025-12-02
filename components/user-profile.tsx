@@ -1,57 +1,18 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { User, Mail, Phone, MapPin, Users, Copy, Check } from 'lucide-react'
-import { createClient } from "@/lib/supabase/client"
+import { useState } from "react"
+import { User, Mail, Phone, MapPin } from "lucide-react"
 
 export function UserProfile() {
   const [isEditing, setIsEditing] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [referralData, setReferralData] = useState({
-    code: '',
-    count: 0,
-    link: ''
-  })
   const [formData, setFormData] = useState({
     name: "John Doe",
     email: "john@example.com",
     phone: "+254 712 345 678",
     location: "Nairobi, Kenya",
-    bio: "Crypto enthusiast and AfriX miner",
+    bio: "Crypto enthusiast and GrowX miner",
   })
-
-  useEffect(() => {
-    const fetchReferralData = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('referral_code, total_referrals')
-          .eq('id', user.id)
-          .single()
-
-        if (profile) {
-          const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-          setReferralData({
-            code: profile.referral_code || '',
-            count: profile.total_referrals || 0,
-            link: `${baseUrl}/auth/sign-up?ref=${profile.referral_code}`
-          })
-        }
-      }
-    }
-
-    fetchReferralData()
-  }, [])
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralData.link)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -65,61 +26,6 @@ export function UserProfile() {
 
   return (
     <div className="space-y-6">
-      <div className="glass-card p-6 rounded-xl border border-white/10 bg-gradient-to-br from-green-500/10 to-blue-500/10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-            <Users className="w-5 h-5 text-green-400" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold">My Referrals</h3>
-            <p className="text-sm text-gray-400">Share your link and boost your mining rate</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-black/30 rounded-lg p-4">
-            <div className="text-sm text-gray-400 mb-1">Total Referrals</div>
-            <div className="text-3xl font-bold text-green-400">{referralData.count}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              +{(referralData.count * 10).toFixed(0)}% mining boost
-            </div>
-          </div>
-
-          <div className="bg-black/30 rounded-lg p-4">
-            <div className="text-sm text-gray-400 mb-2">Referral Code</div>
-            <div className="font-mono text-lg text-white">{referralData.code || 'Loading...'}</div>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <div className="text-sm text-gray-400 mb-2">Your Referral Link</div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={referralData.link}
-              readOnly
-              className="flex-1 px-4 py-2 rounded-lg bg-black/30 border border-white/10 text-white text-sm"
-            />
-            <button
-              onClick={handleCopyLink}
-              className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-semibold transition flex items-center gap-2"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copy
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="glass-card p-8 rounded-2xl border border-white/5">
         <div className="flex items-start justify-between mb-8">
           <div>

@@ -1,12 +1,11 @@
 "use client"
 
-import { Wallet, ArrowLeftRight } from 'lucide-react'
+import { Wallet, ArrowLeftRight } from "lucide-react"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { AFXPriceWidget } from "./afx-price-widget"
 import { Button } from "@/components/ui/button"
 import { BalanceTransferModal } from "./balance-transfer-modal"
-import { ReferralBalanceWidget } from "./referral-balance-widget"
 
 export function DashboardStats() {
   const [dashboardBalance, setDashboardBalance] = useState(0)
@@ -54,7 +53,7 @@ export function DashboardStats() {
     <div className="space-y-3">
       <AFXPriceWidget />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Dashboard Balance Card */}
         <div className="glass-card p-4 rounded-xl border border-white/5">
           <div className="flex items-start justify-between mb-3">
@@ -84,8 +83,6 @@ export function DashboardStats() {
           </div>
           <div className="text-xs text-green-400">AFX Coins</div>
         </div>
-
-        <ReferralBalanceWidget />
       </div>
 
       <div className="flex justify-center">

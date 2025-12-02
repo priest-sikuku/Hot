@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Package, TrendingDown } from 'lucide-react'
+import { Package, TrendingDown } from "lucide-react"
 
 const TOTAL_SUPPLY = 1000000
 
@@ -14,25 +14,27 @@ export function RemainingSupplyBar() {
   } | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
-    fetchRemainingSupply()
-    
-    const interval = setInterval(fetchRemainingSupply, 10000)
-    return () => clearInterval(interval)
+    // Initialize Supabase client only on client side
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (supabaseUrl && supabaseAnonKey) {
+      const client = createBrowserClient(supabaseUrl, supabaseAnonKey)
+      setSupabase(client)
+      fetchRemainingSupply(client)
+    } else {
+      setLoading(false)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const fetchRemainingSupply = async () => {
+  const fetchRemainingSupply = async (client: any) => {
     try {
-      const { data, error } = await supabase
-        .from("global_supply")
-        .select("*")
-        .eq("id", 1)
-        .single()
+      const { data, error } = await client.from("global_supply").select("*").eq("id", 1).single()
 
       if (error) {
         console.error("[v0] Error fetching global supply:", error)
@@ -59,10 +61,15 @@ export function RemainingSupplyBar() {
     }
   }
 
+  useEffect(() => {
+    if (!supabase || !supplyData) return
+
+    const interval = setInterval(() => fetchRemainingSupply(supabase), 10000)
+    return () => clearInterval(interval)
+  }, [supabase])
+
   if (loading) {
-    return (
-      <div className="w-full max-w-4xl mx-auto h-10 bg-white/5 rounded-xl animate-pulse" />
-    )
+    return <div className="w-full max-w-4xl mx-auto h-10 bg-white/5 rounded-xl animate-pulse" />
   }
 
   if (!supplyData) {
@@ -71,28 +78,27 @@ export function RemainingSupplyBar() {
 
   const { remaining, mined, percentage } = supplyData
   const barColor = percentage > 50 ? "bg-green-500" : percentage > 25 ? "bg-yellow-500" : "bg-red-500"
-  const glowColor = percentage > 50 ? "shadow-green-500/50" : percentage > 25 ? "shadow-yellow-500/50" : "shadow-red-500/50"
+  const glowColor =
+    percentage > 50 ? "shadow-green-500/50" : percentage > 25 ? "shadow-yellow-500/50" : "shadow-red-500/50"
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-black/40 rounded-xl h-10 border border-white/10 overflow-hidden backdrop-blur-md relative shadow-lg">
       <div className="relative h-full flex items-center px-6">
-        <div 
-          className={`absolute left-0 top-0 h-full ${barColor} opacity-30 transition-all duration-700 ease-out ${glowColor} shadow-lg`} 
+        <div
+          className={`absolute left-0 top-0 h-full ${barColor} opacity-30 transition-all duration-700 ease-out ${glowColor} shadow-lg`}
           style={{ width: `${percentage}%` }}
         >
           {/* Shimmer effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
         </div>
-        
+
         {/* Content */}
         <div className="relative flex items-center justify-between w-full gap-4">
           <div className="flex items-center gap-3">
             <Package className="w-5 h-5 text-green-400" />
-            <span className="text-base font-bold text-white">
-              Remaining Supply: {remaining.toLocaleString()} AFX
-            </span>
+            <span className="text-base font-bold text-white">Remaining Supply: {remaining.toLocaleString()} AFX</span>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <TrendingDown className="w-4 h-4" />

@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { createBrowserClient } from "@supabase/ssr"
-import { Users, DollarSign, TrendingUp, Award, Settings, Package, Star } from 'lucide-react'
+import { TrendingUp, Award, Settings, Package, Star } from "lucide-react"
 import Link from "next/link"
 
 interface UserStats {
-  total_referrals: number
-  commission_earned: number
   rating: number
   total_roi: number
 }
@@ -22,54 +20,54 @@ export function UserStatsCard() {
   const [supply, setSupply] = useState<SupplyData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
-    fetchUserStats()
-    fetchSupply()
+    // Initialize Supabase client only on client side
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (supabaseUrl && supabaseAnonKey) {
+      const client = createBrowserClient(supabaseUrl, supabaseAnonKey)
+      setSupabase(client)
+      fetchUserStats(client)
+      fetchSupply(client)
+    } else {
+      setLoading(false)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const fetchUserStats = async () => {
+  const fetchUserStats = async (client: any) => {
     try {
       const {
         data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
+      } = await client.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
 
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await client
         .from("profiles")
-        .select("total_referrals, total_commission, rating, total_trades")
+        .select("rating, total_trades")
         .eq("id", user.id)
         .single()
 
       if (profileError) {
         console.error("[v0] Error fetching profile stats:", profileError)
+        setLoading(false)
         return
       }
 
-      const { data: referralsData, error: referralsError } = await supabase
-        .from("referrals")
-        .select("id", { count: "exact" })
-        .eq("referrer_id", user.id)
-
-      if (referralsError) {
-        console.error("[v0] Error fetching referrals count:", referralsError)
-      }
-
-      const actualReferralCount = referralsData?.length ?? 0
-
-      const { data: statsData, error: statsError } = await supabase
+      const { data: statsData, error: statsError } = await client
         .from("user_stats")
         .select("total_roi")
         .eq("user_id", user.id)
         .single()
 
       const combinedStats: UserStats = {
-        total_referrals: actualReferralCount,
-        commission_earned: profileData?.total_commission ?? 0,
         rating: profileData?.rating ?? 0,
         total_roi: statsData?.total_roi ?? 0,
       }
@@ -83,9 +81,9 @@ export function UserStatsCard() {
     }
   }
 
-  const fetchSupply = async () => {
+  const fetchSupply = async (client: any) => {
     try {
-      const { data, error } = await supabase.from("supply_tracking").select("*").single()
+      const { data, error } = await client.from("supply_tracking").select("*").single()
 
       if (error) {
         console.error("[v0] Error fetching supply:", error)
@@ -127,32 +125,6 @@ export function UserStatsCard() {
       </div>
 
       <div className="space-y-4">
-        {/* Referrals */}
-        <div className="flex items-center justify-between p-4 rounded-lg bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <Users className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Total Referrals</p>
-              <p className="text-xl font-bold">{stats?.total_referrals ?? 0}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Commission Earned */}
-        <div className="flex items-center justify-between p-4 rounded-lg bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <DollarSign className="w-5 h-5 text-green-400" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Commission Earned</p>
-              <p className="text-xl font-bold">{(stats?.commission_earned ?? 0).toFixed(2)} AFX</p>
-            </div>
-          </div>
-        </div>
-
         {/* ROI */}
         <div className="flex items-center justify-between p-4 rounded-lg bg-white/5">
           <div className="flex items-center gap-3">
@@ -185,9 +157,7 @@ export function UserStatsCard() {
                       key={star}
                       size={12}
                       className={
-                        star <= Math.floor(stats?.rating ?? 0)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-600"
+                        star <= Math.floor(stats?.rating ?? 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
                       }
                     />
                   ))}

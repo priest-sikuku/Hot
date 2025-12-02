@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { User, ChevronDown } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 export default function Header() {
   const router = useRouter()
-  const [supabase, setSupabase] = useState<ReturnType<typeof import("@/lib/supabase/client").createClient> | null>(null)
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -15,7 +16,6 @@ export default function Header() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
   useEffect(() => {
-    const { createClient } = require("@/lib/supabase/client")
     setSupabase(createClient())
   }, [])
 
@@ -142,13 +142,14 @@ export default function Header() {
                       >
                         View Profile
                       </Link>
-                      <Link
-                        href="/transactions"
-                        className="block px-4 py-2 text-sm hover:bg-green-500/10 transition"
-                        onClick={() => setProfileDropdownOpen(false)}
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false)
+                        }}
+                        className="block px-4 py-2 text-sm text-gray-400 hover:bg-green-500/10 transition"
                       >
                         Transaction History
-                      </Link>
+                      </button>
                       <button
                         onClick={() => {
                           setProfileDropdownOpen(false)

@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Home, ArrowLeftRight, User, Clock, Wallet } from "lucide-react"
+import { Home, ArrowLeftRight, User, Wallet } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 export function MobileBottomNav() {
@@ -37,7 +37,6 @@ export function MobileBottomNav() {
     { href: "/dashboard", icon: Home, label: "Home" },
     { href: "/p2p", icon: ArrowLeftRight, label: "P2P" },
     { href: "/assets", icon: Wallet, label: "Assets" },
-    { href: "/transactions", icon: Clock, label: "History" },
   ]
 
   // Hide bottom nav on auth pages and admin pages

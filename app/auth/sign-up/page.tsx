@@ -22,7 +22,6 @@ export default function SignUp() {
     username: "",
     password: "",
     confirmPassword: "",
-    referralCode: "",
     agreeToTerms: false,
   })
 
@@ -30,10 +29,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const refCode = searchParams.get("ref")
-    if (refCode) {
-      setFormData((prev) => ({ ...prev, referralCode: refCode }))
-    }
+    // Removed referral code extraction from URL
   }, [searchParams])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -123,36 +119,7 @@ export default function SignUp() {
       // Just wait a moment for it to be created
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      // Link referral if code provided
-      if (formData.referralCode) {
-        try {
-          console.log("[v0] Linking referral code:", formData.referralCode)
-
-          const { data: refData, error: refError } = await supabase.rpc("link_referral", {
-            p_user_id: data.user.id,
-            p_referral_code: formData.referralCode.toUpperCase(),
-          })
-
-          if (refError) {
-            console.error("[v0] Referral error:", refError)
-            setError(`Account created successfully! However, referral code could not be applied: ${refError.message}`)
-            // Still redirect to success page after 2 seconds
-            setTimeout(() => router.push("/auth/sign-up-success"), 2000)
-            return
-          }
-
-          if (refData && !refData.success) {
-            console.warn("[v0] Referral not linked:", refData.message)
-            setError(`Account created successfully! However: ${refData.message}`)
-            setTimeout(() => router.push("/auth/sign-up-success"), 2000)
-            return
-          }
-
-          console.log("[v0] Referral linked successfully")
-        } catch (refErr) {
-          console.error("[v0] Referral exception:", refErr)
-        }
-      }
+      // Removed referral code linking logic
 
       // Success - redirect to success page
       console.log("[v0] Signup complete, redirecting...")
@@ -250,19 +217,6 @@ export default function SignUp() {
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Referral Code (Optional)</label>
-              <input
-                type="text"
-                name="referralCode"
-                value={formData.referralCode}
-                onChange={handleChange}
-                placeholder="Enter referral code"
-                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50 transition uppercase"
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter your friend's referral code to earn rewards</p>
             </div>
 
             {/* Terms */}

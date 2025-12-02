@@ -1,6 +1,6 @@
 "use client"
 
-import { Shield, Star, Plus, TrendingUp, History, ListChecks } from "lucide-react"
+import { Shield, Star, Plus, TrendingUp, History, ListChecks, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { BalanceTransferModal } from "@/components/balance-transfer-modal"
+import { UserTransferModal } from "@/components/user-transfer-modal"
 import { fetchAdsWithFilters, type AdFilters } from "@/lib/p2p-filters"
 
 interface Ad {
@@ -54,6 +55,7 @@ export default function P2PMarket() {
   const [p2pBalance, setP2pBalance] = useState<number>(0)
   const [dashboardBalance, setDashboardBalance] = useState<number>(0)
   const [showTransferModal, setShowTransferModal] = useState(false)
+  const [showUserTransferModal, setShowUserTransferModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [initiatingTrade, setInitiatingTrade] = useState<string | null>(null)
@@ -296,6 +298,13 @@ export default function P2PMarket() {
               <TrendingUp size={18} />
               Transfer Balance
             </button>
+            <button
+              onClick={() => setShowUserTransferModal(true)}
+              className="px-4 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/50 font-semibold gap-2 inline-flex items-center transition"
+            >
+              <Users size={18} />
+              Send AFX to User
+            </button>
             <Link href="/p2p/my-trades">
               <Button className="px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/50 font-semibold gap-2 transition">
                 <History size={18} />
@@ -518,6 +527,13 @@ export default function P2PMarket() {
         onOpenChange={setShowTransferModal}
         dashboardBalance={dashboardBalance}
         p2pBalance={p2pBalance}
+        onTransferComplete={fetchBalance}
+      />
+      {/* UserTransferModal */}
+      <UserTransferModal
+        open={showUserTransferModal}
+        onOpenChange={setShowUserTransferModal}
+        currentUserBalance={dashboardBalance}
         onTransferComplete={fetchBalance}
       />
     </div>

@@ -10,14 +10,17 @@ import { createClient } from "@/lib/supabase/client"
 export default function Hero() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
 
   useEffect(() => {
+    const client = createClient()
+    setSupabase(client)
+
     const checkAuth = async () => {
       try {
         const {
           data: { user },
-        } = await supabase.auth.getUser()
+        } = await client.auth.getUser()
         setIsLoggedIn(!!user)
       } catch (error) {
         console.error("Auth check error:", error)
@@ -32,12 +35,12 @@ export default function Hero() {
     // Subscribe to auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = client.auth.onAuthStateChange((event, session) => {
       setIsLoggedIn(!!session?.user)
     })
 
     return () => subscription?.unsubscribe()
-  }, [supabase])
+  }, [])
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
